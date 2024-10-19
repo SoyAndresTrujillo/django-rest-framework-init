@@ -1,12 +1,38 @@
 from datetime import datetime
 from rest_framework import serializers
+
+from bookings.serializers import AppointmentSerializer
 from .models import Patient, Insurance, MedicalRecord
 
 
 class PatientSerializer(serializers.ModelSerializer):
+    # Create a new appointment for a patient
+    #     python ./manage.py shell
+    # >>> from datetime import date, time
+    # >>> from doctors.models import Doctor
+    # >>> from patients.models import Patient
+    # >>> from bookings.models import Appointment
+    # >>> patient = Patient.objects.get(id=2)
+    # >>> doctor = Doctor.objects.first()
+    # >>> Appointment.objects.create(patient=patient, doctor=doctor, appointment_date=date(2022, 12, 5), appointment_time=time(9, 0), notes="Ejemplo", status="HECHA")
+    appointments = AppointmentSerializer(many=True, read_only=True)
+
     class Meta:
         model = Patient
-        fields = "__all__"
+        # the order to read the fields is important, firts search the field in class,
+        # then in the related model
+        # if not found field, error is raised
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "date_of_birth",
+            "contact_number",
+            "email",
+            "address",
+            "medical_history",
+            "appointments",
+        ]
 
     def validate_email(self, value):
         if "@example.com" in value:

@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from .models import Department, Doctor, DoctorAvailability, MedicalNote
+from bookings.serializers import AppointmentSerializer
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -9,9 +11,22 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 
 class DoctorSerializer(serializers.ModelSerializer):
+    appointments = AppointmentSerializer(many=True, read_only=True)
+
     class Meta:
         model = Doctor
-        fields = "__all__"
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "qualification",
+            "contact_number",
+            "email",
+            "address",
+            "biography",
+            "is_on_vacation",
+            "appointments",
+        ]
 
     # Custom validation for email
     def validate_email(self, value):
