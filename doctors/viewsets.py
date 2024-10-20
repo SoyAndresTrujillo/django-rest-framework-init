@@ -1,7 +1,10 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+from bookings.serializers import AppointmentSerializer
+from bookings.models import Appointment
 
 from .models import (
     Doctor,
@@ -36,6 +39,58 @@ class DoctorViewSet(viewsets.ModelViewSet):
         doctor.is_on_vacation = False
         doctor.save()
         return Response({"status": "Doctor is not on vacation"})
+
+    @action(
+        ["GET", "POST", "DELETE"],
+        url_path="appointments(?:/(?P<appointment_id>[^/.]+))?",
+        detail=True,
+        serializer_class=AppointmentSerializer,
+    )
+    def appointments(self, request, pk, appointment_id=None):
+        doctor = self.get_object()
+        data = request.data.copy()
+        data["doctor"] = doctor.id
+
+        if request.method == "POST":
+            serializer = self.serializer_class(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if request.method == "GET":
+            appointments = Appointment.objects.filter(doctor=doctor.id)
+            serializer = self.serializer_class(appointments, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        if request.method == "DELETE" and appointment_id:
+            try:
+                appointment = Appointment.objects.get(id=appointment_id)
+                serializer = self.serializer_class(appointment)
+                appointment.delete()
+                return Response(status=status.HTTP_200_OK)
+
+            except Appointment.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @action(
+        ["DELETE", "GET"],
+        detail=True,
+        url_path="appointment/(?P<appointment_id>[^/.]+)",
+        serializer_class=AppointmentSerializer,
+    )
+    def ppointment(self, request, pk, appointment_id):
+        try:
+            appointment = Appointment.objects.get(id=appointment_id)
+            serializer = self.serializer_class(appointment)
+
+            if request.method == "DELETE":
+                appointment.delete()
+                return Response(status=status.HTTP_200_OK)
+
+            if request.method == "GET":
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except Appointment.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
