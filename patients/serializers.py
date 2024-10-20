@@ -16,6 +16,7 @@ class PatientSerializer(serializers.ModelSerializer):
     # >>> doctor = Doctor.objects.first()
     # >>> Appointment.objects.create(patient=patient, doctor=doctor, appointment_date=date(2022, 12, 5), appointment_time=time(9, 0), notes="Ejemplo", status="HECHA")
     appointments = AppointmentSerializer(many=True, read_only=True)
+    age = serializers.SerializerMethodField()
 
     class Meta:
         model = Patient
@@ -26,6 +27,7 @@ class PatientSerializer(serializers.ModelSerializer):
             "id",
             "first_name",
             "last_name",
+            "age",
             "date_of_birth",
             "contact_number",
             "email",
@@ -33,6 +35,9 @@ class PatientSerializer(serializers.ModelSerializer):
             "medical_history",
             "appointments",
         ]
+
+    def get_age(self, obj):
+        return (datetime.now().date() - obj.date_of_birth).days // 365
 
     def validate_email(self, value):
         if "@example.com" in value:
