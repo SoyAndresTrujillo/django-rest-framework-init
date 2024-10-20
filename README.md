@@ -82,3 +82,20 @@ urlpatterns = [
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
 ```
+
+# Extensios
+Install django-extensions:
+```bash
+pip install django-extensions
+```
+And add to ```INSTALLED_APPS``` into ```setting.py```
+```bash
+INSTALLED_APPS = [
+    ...
+    "django_extensions",
+]
+```
+List urls:
+```bash
+./manage.py show_urls
+```

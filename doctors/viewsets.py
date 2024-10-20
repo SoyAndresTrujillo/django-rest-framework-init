@@ -78,7 +78,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
         url_path="appointment/(?P<appointment_id>[^/.]+)",
         serializer_class=AppointmentSerializer,
     )
-    def ppointment(self, request, pk, appointment_id):
+    def appointment(self, request, pk, appointment_id):
         try:
             appointment = Appointment.objects.get(id=appointment_id)
             serializer = self.serializer_class(appointment)
